@@ -79,3 +79,12 @@ Use Tailscale Serve, not Funnel, for this private application. Do not make the a
 - Update `DEPLOYMENT.md` when the release or serving workflow changes.
 - Keep user-facing text in English unless the requirement says otherwise.
 - After changes, verify `git status`, the local lookup, and the deployed HTTPS page when practical.
+
+## Companion tracks and branch workflow
+
+- Keep the root PWA as the default cross-device product. Raycast and iOS are optional private companion tracks and must not change the PWA behavior without an explicit requirement.
+- Work on companion changes in dedicated branches or Kanban worktrees. Push reviewable branches to GitHub and use pull requests before merging into `main`; do not push unreviewed companion changes directly to `main`.
+- Keep Raycast changes under `raycast/` and iOS changes under `ios/`. Do not commit Apple certificates, provisioning profiles, private keys, API tokens, or machine-specific signing settings.
+- Run the available Linux checks locally, then run Xcode, Simulator, signing, and physical-device checks on macOS. Report Mac-only checks as unrun until their commands have actually succeeded.
+- For each client, verify `Bad` and `Haus` against deterministic fixtures and manually compare `das Bad`, English meanings, and core declension forms across the PWA, Raycast extension, and iOS app when the platform is available.
+- Do not publish the Raycast extension, submit the iOS app to a store, or enable Tailscale Funnel without explicit approval.
