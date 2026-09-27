@@ -16,6 +16,20 @@ It reads the German Wiktionary entry for the requested word and extracts:
 
 Each result includes a link to the full German Wiktionary entry. Results are cached in the browser after lookup.
 
+## Companion apps
+
+The PWA remains the default cross-device tool. Two private companions share the
+same Wiktionary source and fixture-driven parsing behavior:
+
+- `raycast/` is a local Raycast extension. It is not published to the Raycast Store.
+- `ios/` is a native SwiftUI app with a glanceable WidgetKit companion. Xcode/macOS
+  is required for iOS tests, simulator builds, and signing.
+
+Both companions are optional and do not change the root PWA. See the local
+`raycast/README.md`, `ios/README.md`, and
+[`docs/releases/companion-apps-v0.1.0.md`](docs/releases/companion-apps-v0.1.0.md)
+for verification and rollback details.
+
 ## Run locally
 
 ```bash
