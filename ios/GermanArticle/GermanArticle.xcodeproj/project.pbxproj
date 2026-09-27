@@ -1,0 +1,128 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A001 /* GermanArticleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F001; };
+		A002 /* DictionaryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F002; };
+		A003 /* WiktionaryParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F003; };
+		A004 /* DictionaryClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F004; };
+		A005 /* LookupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F005; };
+		A006 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F006; };
+		A007 /* Widget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = P007; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A008 /* Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F008; };
+		A009 /* WidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F009; };
+		A010 /* WidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010; };
+		A011 /* DictionaryEntry.swift in Widget Sources */ = {isa = PBXBuildFile; fileRef = F002; };
+		A012 /* ParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F012; };
+		A013 /* LookupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F013; };
+		A014 /* WidgetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014; };
+		A015 /* WidgetTests.swift in Widget Sources */ = {isa = PBXBuildFile; fileRef = F014; };
+		A016 /* Widget.swift in Widget Tests */ = {isa = PBXBuildFile; fileRef = F008; };
+		A017 /* WidgetProvider.swift in Widget Tests */ = {isa = PBXBuildFile; fileRef = F009; };
+		A018 /* WidgetEntryView.swift in Widget Tests */ = {isa = PBXBuildFile; fileRef = F010; };
+		A019 /* DictionaryEntry.swift in Widget Tests */ = {isa = PBXBuildFile; fileRef = F002; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		P001 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GermanArticle.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		P007 = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = GermanArticleWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		P012 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GermanArticleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		P014 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GermanArticleWidgetTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GermanArticleApp.swift; sourceTree = "<group>"; };
+		F002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/DictionaryEntry.swift; sourceTree = "<group>"; };
+		F003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/WiktionaryParser.swift; sourceTree = "<group>"; };
+		F004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/DictionaryClient.swift; sourceTree = "<group>"; };
+		F005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/LookupViewModel.swift; sourceTree = "<group>"; };
+		F006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/ContentView.swift; sourceTree = "<group>"; };
+		F008 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GermanArticleWidget.swift; sourceTree = "<group>"; };
+		F009 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetProvider.swift; sourceTree = "<group>"; };
+		F010 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetEntryView.swift; sourceTree = "<group>"; };
+		F012 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiktionaryParserTests.swift; sourceTree = "<group>"; };
+		F013 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookupViewModelTests.swift; sourceTree = "<group>"; };
+		F014 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GermanArticleWidgetTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B001 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		B007 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		B012 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		B014 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		G000 = {isa = PBXGroup; children = (G001, G007, G012, G014, GProducts); sourceTree = "<group>"; };
+		G001 = {isa = PBXGroup; children = (F001, F002, F003, F004, F005, F006); path = GermanArticle; sourceTree = "<group>"; };
+		G007 = {isa = PBXGroup; children = (F008, F009, F010); path = GermanArticleWidget; sourceTree = "<group>"; };
+		G012 = {isa = PBXGroup; children = (F012, F013); path = GermanArticleTests; sourceTree = "<group>"; };
+		G014 = {isa = PBXGroup; children = (F014); path = GermanArticleWidgetTests; sourceTree = "<group>"; };
+		GProducts = {isa = PBXGroup; children = (P001, P007, P012, P014); name = Products; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		T001 = {isa = PBXNativeTarget; buildConfigurationList = C001; buildPhases = (S001, B001, E001); buildRules = (); dependencies = (D001); name = GermanArticle; productName = GermanArticle; productReference = P001; productType = "com.apple.product-type.application"; };
+		T007 = {isa = PBXNativeTarget; buildConfigurationList = C007; buildPhases = (S007, B007); buildRules = (); dependencies = (); name = GermanArticleWidget; productName = GermanArticleWidget; productReference = P007; productType = "com.apple.product-type.app-extension"; };
+		T012 = {isa = PBXNativeTarget; buildConfigurationList = C012; buildPhases = (S012, B012); buildRules = (); dependencies = (D012); name = GermanArticleTests; productName = GermanArticleTests; productReference = P012; productType = "com.apple.product-type.bundle.unit-test"; };
+		T014 = {isa = PBXNativeTarget; buildConfigurationList = C014; buildPhases = (S014, B014); buildRules = (); dependencies = (D014); name = GermanArticleWidgetTests; productName = GermanArticleWidgetTests; productReference = P014; productType = "com.apple.product-type.bundle.unit-test"; };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PRJ = {isa = PBXProject; attributes = {LastUpgradeCheck = 2660; TargetAttributes = {T001 = {CreatedOnToolsVersion = 26.6;}; T007 = {CreatedOnToolsVersion = 26.6;}; T012 = {CreatedOnToolsVersion = 26.6; TestTargetID = T001;}; T014 = {CreatedOnToolsVersion = 26.6; TestTargetID = T007;};};}; buildConfigurationList = CP; compatibilityVersion = "Xcode 16.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = G000; productRefGroup = GProducts; projectDirPath = ""; projectRoot = ""; targets = (T001, T007, T012, T014); };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		R001 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		R007 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		S001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A001, A002, A003, A004, A005, A006); runOnlyForDeploymentPostprocessing = 0; };
+		S007 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A008, A009, A010, A011); runOnlyForDeploymentPostprocessing = 0; };
+		S012 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A012, A013); runOnlyForDeploymentPostprocessing = 0; };
+		S014 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A014, A015, A016, A017, A018, A019); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D001 = {isa = PBXTargetDependency; target = T007; targetProxy = X001; };
+		D012 = {isa = PBXTargetDependency; target = T001; targetProxy = X012; };
+		D014 = {isa = PBXTargetDependency; target = T007; targetProxy = X014; };
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		X001 = {isa = PBXContainerItemProxy; containerPortal = PRJ; proxyType = 1; remoteGlobalIDString = T007; remoteInfo = GermanArticleWidget; };
+		X012 = {isa = PBXContainerItemProxy; containerPortal = PRJ; proxyType = 1; remoteGlobalIDString = T001; remoteInfo = GermanArticle; };
+		X014 = {isa = PBXContainerItemProxy; containerPortal = PRJ; proxyType = 1; remoteGlobalIDString = T007; remoteInfo = GermanArticleWidget; };
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E001 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (A007); name = "Embed Foundation Extensions"; runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		C001D = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; DEVELOPMENT_TEAM = ""; INFOPLIST_FILE = GermanArticle/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.lucaspal.GermanArticle; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+		C001R = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; DEVELOPMENT_TEAM = ""; INFOPLIST_FILE = GermanArticle/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.lucaspal.GermanArticle; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
+		C007D = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; DEVELOPMENT_TEAM = ""; INFOPLIST_FILE = GermanArticleWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.lucaspal.GermanArticle.widget; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+		C007R = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; DEVELOPMENT_TEAM = ""; INFOPLIST_FILE = GermanArticleWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.lucaspal.GermanArticle.widget; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
+		C012D = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; INFOPLIST_FILE = GermanArticleTests/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.lucaspal.GermanArticle.tests; SWIFT_VERSION = 5.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GermanArticle.app/GermanArticle"; }; name = Debug; };
+		C012R = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; INFOPLIST_FILE = GermanArticleTests/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.lucaspal.GermanArticle.tests; SWIFT_VERSION = 5.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GermanArticle.app/GermanArticle"; }; name = Release; };
+		C014D = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; INFOPLIST_FILE = GermanArticleWidgetTests/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.lucaspal.GermanArticle.widget-tests; SWIFT_VERSION = 5.0; }; name = Debug; };
+		C014R = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; INFOPLIST_FILE = GermanArticleWidgetTests/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.lucaspal.GermanArticle.widget-tests; SWIFT_VERSION = 5.0; }; name = Release; };
+		CPD = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; SWIFT_VERSION = 5.0; }; name = Debug; };
+		CPR = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; SWIFT_VERSION = 5.0; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C001 = {isa = XCConfigurationList; buildConfigurations = (C001D, C001R); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		C007 = {isa = XCConfigurationList; buildConfigurations = (C007D, C007R); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		C012 = {isa = XCConfigurationList; buildConfigurations = (C012D, C012R); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		C014 = {isa = XCConfigurationList; buildConfigurations = (C014D, C014R); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		CP = {isa = XCConfigurationList; buildConfigurations = (CPD, CPR); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = PRJ;
+}
