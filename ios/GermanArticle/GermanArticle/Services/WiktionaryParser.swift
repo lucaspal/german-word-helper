@@ -124,22 +124,37 @@ struct WiktionaryParser {
 
     private func extractTableDeclension(from wikitext: String) -> [DeclensionRow] {
         let cases = [("Nominative", "Nominativ"), ("Genitive", "Genitiv"), ("Dative", "Dativ"), ("Accusative", "Akkusativ")]
+        let lines = wikitext.components(separatedBy: .newlines)
         var rows: [DeclensionRow] = []
 
         for (englishCase, germanCase) in cases {
-            let escapedCase = NSRegularExpression.escapedPattern(for: germanCase)
-            let pattern = "!\\s*" + escapedCase + "[^\\n]*\\n\\|\\|\\s*([^\\n|]+)\\n\\|\\|\\s*([^\\n|]+)"
-            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
-                  let match = regex.firstMatch(in: wikitext, options: [], range: NSRange(location: 0, length: wikitext.utf16.count)),
-                  let singularRange = Range(match.range(at: 1), in: wikitext),
-                  let pluralRange = Range(match.range(at: 2), in: wikitext) else {
+            guard let headerIndex = lines.firstIndex(where: { line in
+                line.range(of: "^!\\s*" + germanCase, options: [.regularExpression, .caseInsensitive]) != nil
+            }) else {
                 continue
             }
 
-            let singular = String(wikitext[singularRange]).trimmingCharacters(in: .whitespacesAndNewlines)
-            let plural = String(wikitext[pluralRange]).trimmingCharacters(in: .whitespacesAndNewlines)
-            rows.append(DeclensionRow(caseName: englishCase, number: "singular", form: singular))
-            rows.append(DeclensionRow(caseName: englishCase, number: "plural", form: plural))
+            var forms: [String] = []
+            for line in lines.dropFirst(headerIndex + 1) {
+                if line.hasPrefix("!") || line.contains("}") {
+                    break
+                }
+                guard let range = line.range(of: "^\\|\\|\\s*(.+)$", options: .regularExpression) else {
+                    continue
+                }
+                let form = String(line[range]).replacingOccurrences(of: "^\\|\\|\\s*", with: "", options: .regularExpression)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                if !form.isEmpty && form != "-" {
+                    forms.append(form)
+                }
+                if forms.count == 2 {
+                    break
+                }
+            }
+
+            guard forms.count == 2 else { continue }
+            rows.append(DeclensionRow(caseName: englishCase, number: "singular", form: forms[0]))
+            rows.append(DeclensionRow(caseName: englishCase, number: "plural", form: forms[1]))
         }
 
         return rows
