@@ -22,6 +22,10 @@ jobs:
         run: xcodebuild -version
       - name: Validate project and shared scheme
         run: xcodebuild -project GermanArticle.xcodeproj -scheme GermanArticle -list
+      - name: Validate app extension bundle metadata
+        run: |
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' GermanArticleWidget/Info.plist
+          /usr/libexec/PlistBuddy -c 'Print :CFBundlePackageType' GermanArticleWidget/Info.plist
       - name: Run iOS and widget tests
         shell: bash
         run: |
