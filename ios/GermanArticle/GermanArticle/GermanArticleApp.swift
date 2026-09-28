@@ -1,8 +1,18 @@
 import SwiftUI
 
+@MainActor
+final class AppRoute: ObservableObject {
+    @Published var lookupWord: String?
+
+    func requestLookup(_ word: String) {
+        lookupWord = word
+    }
+}
+
 @main
 struct GermanArticleApp: App {
     @StateObject private var viewModel: LookupViewModel
+    @StateObject private var route = AppRoute()
 
     init() {
         let client = WiktionaryClient()
@@ -11,7 +21,7 @@ struct GermanArticleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(viewModel: viewModel)
+            ContentView(viewModel: viewModel, route: route)
                 .onOpenURL { url in
                     handleDeepLink(url)
                 }
@@ -27,8 +37,6 @@ struct GermanArticleApp: App {
             return
         }
 
-        Task {
-            await viewModel.lookup(word)
-        }
+        route.requestLookup(word)
     }
 }

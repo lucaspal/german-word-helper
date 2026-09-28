@@ -2,10 +2,13 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel: LookupViewModel
+    @ObservedObject private var route: AppRoute
     @State private var inputText: String = ""
+    @FocusState private var searchFieldFocused: Bool
 
-    init(viewModel: LookupViewModel) {
+    init(viewModel: LookupViewModel, route: AppRoute) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.route = route
     }
 
     var body: some View {
@@ -17,6 +20,7 @@ struct ContentView: View {
                         .textFieldStyle(.roundedBorder)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
+                        .focused($searchFieldFocused)
                         .onSubmit { Task { await viewModel.lookup(inputText) } }
 
                     Button("Lookup") {
@@ -83,6 +87,13 @@ struct ContentView: View {
                         Button("Clear") { viewModel.clear() }
                     }
                 }
+            }
+            .onChange(of: route.lookupWord) { word in
+                guard let word else { return }
+                inputText = word
+                searchFieldFocused = true
+                Task { await viewModel.lookup(word) }
+                route.lookupWord = nil
             }
         }
     }
@@ -171,7 +182,7 @@ struct EntryDetailView: View {
 #Preview {
     let mockClient = MockDictionaryClient()
     mockClient.result = .success(DictionaryEntry.mockBad)
-    return ContentView(viewModel: LookupViewModel(client: mockClient))
+    return ContentView(viewModel: LookupViewModel(client: mockClient), route: AppRoute())
 }
 
 private class MockDictionaryClient: DictionaryClient {
