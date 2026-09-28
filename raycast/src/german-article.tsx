@@ -1,16 +1,23 @@
-import { List, Action, ActionPanel, showToast, Toast, Clipboard, usePromise, open } from "@raycast/api";
-import React, { useState, useEffect, useCallback } from "react";
+import { List, Action, ActionPanel, showToast, Toast, Clipboard } from "@raycast/api";
+import { usePromise } from "@raycast/utils";
+import React, { useState, useEffect } from "react";
 import { lookupWord, type DictionaryEntry } from "./lib/dictionary";
 import { getHistory, addToHistory, MAX_HISTORY } from "./lib/history";
 
 export default function Command() {
   const [searchText, setSearchText] = useState("");
   const [showHistory, setShowHistory] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState<DictionaryEntry | null>(null);
 
   const { data, error, isLoading } = usePromise(lookupWord, [searchText], {
     execute: searchText.length > 0,
   });
+
+  useEffect(() => {
+    if (data) {
+      addToHistory(data.word);
+      setHistory(getHistory());
+    }
+  }, [data]);
 
   // Load history on mount and when showHistory changes
   const [history, setHistory] = useState<string[]>([]);
@@ -24,17 +31,11 @@ export default function Command() {
     setSearchText(text);
     if (text.length === 0) {
       setShowHistory(true);
-      setSelectedEntry(null);
     } else {
       setShowHistory(false);
     }
   };
 
-  const handleSelect = (entry: DictionaryEntry) => {
-    setSelectedEntry(entry);
-    addToHistory(entry.word);
-    setHistory(getHistory());
-  };
 
   const handleClipboardLookup = async () => {
     try {
@@ -68,20 +69,8 @@ export default function Command() {
     <>
       <List.Item
         title={`${entry.article ?? ""} ${entry.word}`.trim()}
-        subtitle={
-          <>
-            <span>Substantiv · {entry.gender ?? "Noun"}</span>
-            {entry.translations.length > 0 && (
-              <>
-                <span> — EN: </span>
-                <span>{entry.translations.slice(0, 3).join(", ")}</span>
-                {entry.translations.length > 3 && <span> …</span>}
-              </>
-            )}
-          </>
-        }
+        subtitle={`Substantiv · ${entry.gender ?? "Noun"}${entry.translations.length > 0 ? ` — EN: ${entry.translations.slice(0, 3).join(", ")}${entry.translations.length > 3 ? " …" : ""}` : ""}`}
         icon={entry.article === "der" ? "📗" : entry.article === "die" ? "📕" : "📘"}
-        onSelect={() => handleSelect(entry)}
         actions={
           entry.wiktionaryUrl
             ? (
@@ -108,7 +97,17 @@ export default function Command() {
     }
 
     return history.map((word, i) => (
-      <List.Item key={i} title={word} subtitle="Recent lookup" icon="clock" onSelect={() => handleHistorySelect(word)} />
+      <List.Item
+        key={i}
+        title={word}
+        subtitle="Recent lookup"
+        icon="clock"
+        actions={
+          <ActionPanel>
+            <Action title="Look Up Word" onAction={() => handleHistorySelect(word)} />
+          </ActionPanel>
+        }
+      />
     ));
   };
 
