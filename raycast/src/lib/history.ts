@@ -1,14 +1,13 @@
 /**
  * Local history storage for recent word lookups.
- * Uses Raycast's localStorage API (available in the extension context).
+ * Raycast extensions must use Raycast's asynchronous LocalStorage API.
  */
+import { LocalStorage } from "@raycast/api";
 
 export const MAX_HISTORY = 20;
 const STORAGE_KEY = "german-article-history";
 
-/**
- * Normalize a word for storage: trim, NFC normalize, remove punctuation.
- */
+/** Normalize a word for storage: trim, NFC normalize, remove punctuation. */
 export function normalizeWord(word: string): string {
   return word
     .normalize("NFC")
@@ -16,56 +15,33 @@ export function normalizeWord(word: string): string {
     .replace(/[„“”‚‘’.,!?;:()[\]{}"«»]/g, "");
 }
 
-/**
- * Get the history array from localStorage (newest first).
- */
-export function getHistory(): string[] {
-  if (typeof localStorage === "undefined") {
-    return [];
-  }
+/** Get the history array from Raycast local storage (newest first). */
+export async function getHistory(): Promise<string[]> {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const stored = await LocalStorage.getItem<string>(STORAGE_KEY);
+    if (!stored) return [];
+    const parsed: unknown = JSON.parse(stored);
+    return Array.isArray(parsed) && parsed.every((value) => typeof value === "string") ? parsed : [];
   } catch {
     return [];
   }
 }
 
-/**
- * Save the history array to localStorage.
- */
-function saveHistory(history: string[]): void {
-  if (typeof localStorage === "undefined") {
-    return;
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+async function saveHistory(history: string[]): Promise<void> {
+  await LocalStorage.setItem(STORAGE_KEY, JSON.stringify(history));
 }
 
-/**
- * Add a word to history (newest first, deduplicated, capped at MAX_HISTORY).
- */
-export function addToHistory(word: string): void {
+/** Add a word to history (newest first, deduplicated, capped at MAX_HISTORY). */
+export async function addToHistory(word: string): Promise<void> {
   const normalized = normalizeWord(word);
-  if (!normalized) {
-    return;
-  }
+  if (!normalized) return;
 
-  const history = getHistory();
-
-  // Remove existing entry if present (deduplication)
-  const filtered = history.filter((w) => w.toLowerCase() !== normalized.toLowerCase());
-
-  // Add to front (newest first)
-  const updated = [normalized, ...filtered].slice(0, MAX_HISTORY);
-
-  saveHistory(updated);
+  const history = await getHistory();
+  const filtered = history.filter((value) => value.toLowerCase() !== normalized.toLowerCase());
+  await saveHistory([normalized, ...filtered].slice(0, MAX_HISTORY));
 }
 
-/**
- * Clear all history.
- */
-export function clearHistory(): void {
-  if (typeof localStorage !== "undefined") {
-    localStorage.removeItem(STORAGE_KEY);
-  }
+/** Clear all history. */
+export async function clearHistory(): Promise<void> {
+  await LocalStorage.removeItem(STORAGE_KEY);
 }

@@ -1,27 +1,23 @@
 import { normalizeWord, addToHistory, getHistory, MAX_HISTORY, clearHistory } from "./history";
 
-// Mock localStorage for Node.js test environment
-const mockStorage: Record<string, string> = {};
+const storage: Record<string, string> = {};
 
-Object.defineProperty(global, "localStorage", {
-  value: {
-    getItem: (key: string) => mockStorage[key] ?? null,
-    setItem: (key: string, value: string) => {
-      mockStorage[key] = value;
+jest.mock("@raycast/api", () => ({
+  LocalStorage: {
+    getItem: async (key: string) => storage[key],
+    setItem: async (key: string, value: string) => {
+      storage[key] = value;
     },
-    removeItem: (key: string) => {
-      delete mockStorage[key];
-    },
-    clear: () => {
-      Object.keys(mockStorage).forEach((key) => delete mockStorage[key]);
+    removeItem: async (key: string) => {
+      delete storage[key];
     },
   },
-  writable: true,
-});
+}), { virtual: true });
 
 describe("History module", () => {
-  beforeEach(() => {
-    clearHistory();
+  beforeEach(async () => {
+    Object.keys(storage).forEach((key) => delete storage[key]);
+    await clearHistory();
     jest.clearAllMocks();
   });
 
@@ -39,37 +35,33 @@ describe("History module", () => {
   });
 
   describe("addToHistory / getHistory", () => {
-    it("stores words newest-first with deduplication", () => {
-      addToHistory("Haus");
-      addToHistory("Bad");
-      addToHistory("Haus"); // duplicate moves to front
+    it("stores words newest-first with deduplication", async () => {
+      await addToHistory("Haus");
+      await addToHistory("Bad");
+      await addToHistory("Haus");
 
-      const history = getHistory();
-      expect(history).toEqual(["Haus", "Bad"]); // newest first, Haus moved to front
+      await expect(getHistory()).resolves.toEqual(["Haus", "Bad"]);
     });
 
-    it("respects MAX_HISTORY limit", () => {
+    it("respects MAX_HISTORY limit", async () => {
       for (let i = 0; i < MAX_HISTORY + 5; i++) {
-        addToHistory(`word${i}`);
+        await addToHistory(`word${i}`);
       }
 
-      const history = getHistory();
-      expect(history.length).toBe(MAX_HISTORY);
-      // Should keep newest
+      const history = await getHistory();
+      expect(history).toHaveLength(MAX_HISTORY);
       expect(history[0]).toBe(`word${MAX_HISTORY + 4}`);
     });
 
-    it("handles empty history", () => {
-      expect(getHistory()).toEqual([]);
+    it("handles empty history", async () => {
+      await expect(getHistory()).resolves.toEqual([]);
     });
 
-    it("persists across calls via localStorage", () => {
-      addToHistory("Bad");
-      addToHistory("Haus");
+    it("persists across calls through Raycast LocalStorage", async () => {
+      await addToHistory("Bad");
+      await addToHistory("Haus");
 
-      // Simulate fresh load
-      const history = getHistory();
-      expect(history).toEqual(["Haus", "Bad"]);
+      await expect(getHistory()).resolves.toEqual(["Haus", "Bad"]);
     });
   });
 });

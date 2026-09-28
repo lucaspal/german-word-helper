@@ -1,4 +1,15 @@
-import { parseGender, parseTranslations, parseDeclension, parseDictionaryEntry } from "./dictionary";
+const storage: Record<string, string> = {};
+
+jest.mock("@raycast/api", () => ({
+  LocalStorage: {
+    getItem: async (key: string) => storage[key],
+    setItem: async (key: string, value: string) => {
+      storage[key] = value;
+    },
+  },
+}), { virtual: true });
+
+import { fetchWikitext, NotGermanNounError, parseGender, parseTranslations, parseDeclension, parseDictionaryEntry } from "./dictionary";
 
 // Saved wikitext fixture for "Bad" from de.wiktionary.org (truncated for test speed)
 const BAD_WIKITEXT = `{{Siehe auch|[[bad]], [[BAD]], [[bád]], [[bāad]]}}
@@ -53,6 +64,10 @@ const HAUS_WIKITEXT = `== Haus ({{Sprache|Deutsch}}) ==
 `;
 
 describe("German Wiktionary parser", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe("parseGender", () => {
     it("extracts neuter gender from {{n}}", () => {
       const result = parseGender(BAD_WIKITEXT);
@@ -109,6 +124,12 @@ describe("German Wiktionary parser", () => {
   });
 
   describe("parseDictionaryEntry", () => {
+    it("rejects a page without a German noun section", () => {
+      expect(() =>
+        parseDictionaryEntry("gehen", "== gehen ({{Sprache|Deutsch}}) ==\n=== {{Wortart|Verb|Deutsch}} ===")
+      ).toThrow(NotGermanNounError);
+    });
+
     it("returns complete entry for Bad with article, English meanings, and declension", () => {
       const entry = parseDictionaryEntry("Bad", BAD_WIKITEXT);
 
@@ -144,6 +165,27 @@ describe("German Wiktionary parser", () => {
         number: "plural",
         form: "Häusern",
       });
+    });
+  });
+
+  describe("fetchWikitext", () => {
+    it("retries a rate-limited response using Retry-After", async () => {
+      const response = (ok: boolean, status: number, body: object) => ({
+        ok,
+        status,
+        headers: { get: (name: string) => (name === "Retry-After" ? "0" : null) },
+        json: async () => body,
+      });
+      jest.spyOn(global, "fetch")
+        .mockResolvedValueOnce(response(false, 429, {} ) as Response)
+        .mockResolvedValueOnce(response(true, 200, { parse: { wikitext: { "*": "fixture" } } }) as Response);
+
+      await expect(fetchWikitext("Bad")).resolves.toBe("fixture");
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(global.fetch).toHaveBeenLastCalledWith(
+        expect.stringContaining("page=Bad"),
+        expect.objectContaining({ headers: expect.objectContaining({ "Api-User-Agent": expect.stringContaining("GermanArticleRaycast") }) })
+      );
     });
   });
 });
