@@ -125,17 +125,23 @@ struct WiktionaryParser {
     private func extractTableDeclension(from wikitext: String) -> [DeclensionRow] {
         let cases = [("Nominative", "Nominativ"), ("Genitive", "Genitiv"), ("Dative", "Dativ"), ("Accusative", "Akkusativ")]
         var rows: [DeclensionRow] = []
+
         for (englishCase, germanCase) in cases {
-            guard let marker = wikitext.range(of: "!\\s*" + germanCase, options: .regularExpression) else { continue }
-            let remainder = wikitext[marker.upperBound...]
-            let cells = remainder.split(separator: "|", omittingEmptySubsequences: true)
-                .map { $0.replacingOccurrences(of: "-", with: "").trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty && !$0.hasPrefix("{") }
-                .prefix(2)
-            guard cells.count >= 2 else { continue }
-            rows.append(DeclensionRow(caseName: englishCase, number: "singular", form: cells[0]))
-            rows.append(DeclensionRow(caseName: englishCase, number: "plural", form: cells[1]))
+            let escapedCase = NSRegularExpression.escapedPattern(for: germanCase)
+            let pattern = "!\\s*" + escapedCase + "[^\\n]*\\n\\|\\|\\s*([^\\n|]+)\\n\\|\\|\\s*([^\\n|]+)"
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
+                  let match = regex.firstMatch(in: wikitext, options: [], range: NSRange(location: 0, length: wikitext.utf16.count)),
+                  let singularRange = Range(match.range(at: 1), in: wikitext),
+                  let pluralRange = Range(match.range(at: 2), in: wikitext) else {
+                continue
+            }
+
+            let singular = String(wikitext[singularRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let plural = String(wikitext[pluralRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            rows.append(DeclensionRow(caseName: englishCase, number: "singular", form: singular))
+            rows.append(DeclensionRow(caseName: englishCase, number: "plural", form: plural))
         }
+
         return rows
     }
 
