@@ -26,6 +26,7 @@ jobs:
         run: |
           /usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' GermanArticleWidget/Info.plist
           /usr/libexec/PlistBuddy -c 'Print :CFBundlePackageType' GermanArticleWidget/Info.plist
+          ! grep -q 'NSExtensionPrincipalClass\|NSExtensionMainStoryboard' GermanArticleWidget/Info.plist
       - name: Run iOS and widget tests
         shell: bash
         run: |
