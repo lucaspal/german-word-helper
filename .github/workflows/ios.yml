@@ -1,0 +1,33 @@
+name: iOS
+
+on:
+  push:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios.yml"
+
+jobs:
+  test:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios/GermanArticle
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Validate project and shared scheme
+        run: xcodebuild -project GermanArticle.xcodeproj -scheme GermanArticle -list
+      - name: Run iOS and widget tests
+        run: >-
+          xcodebuild test
+          -project GermanArticle.xcodeproj
+          -scheme GermanArticle
+          -destination 'platform=iOS Simulator,name=iPhone 16'
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          COMPILER_INDEX_STORE_ENABLE=NO

@@ -87,10 +87,31 @@ Expected simulator behavior:
 - Widget gallery shows "German Article" widget (small/medium)
 - Tapping widget opens app at the word
 
-## Deep Links
+## Continuous integration
 
-The app handles `germanarticle://lookup?word=<WORD>` URLs.
-The widget uses this to open the app at the displayed word.
+GitHub Actions runs the iOS job on pushes and pull requests that change `ios/` or this workflow. The job runs on a hosted macOS runner and:
+
+- reports the available Xcode version;
+- validates the committed project and shared `GermanArticle` scheme;
+- runs the app and widget XCTest targets on an iPhone 16 simulator;
+- disables code signing because CI does not use Luca's development team or certificates.
+
+CI cannot verify personal-team signing, installation on Luca's iPhone, widget placement, or interactive deep-link behavior. Those remain manual Mac/device checks.
+
+## Human verification checklist
+
+On macOS with Xcode 26.6:
+
+1. Pull the PR branch and open `ios/GermanArticle/GermanArticle.xcodeproj`.
+2. Select the `GermanArticle` scheme and an installed iOS Simulator.
+3. Run the tests with `bash ios/scripts/test.sh` or from Xcode.
+4. Build and run the app; look up `Bad` and `Haus`.
+5. Add the personal Development Team under Signing & Capabilities for both app targets.
+6. Enable Developer Mode and trust the Mac on the iPhone if testing on a device.
+7. Install on the iPhone and verify lookup, error handling, widget rendering, and `germanarticle://lookup?word=Bad` deep links.
+8. Add the widget to the Home Screen and confirm tapping it opens the expected word.
+
+Do not commit certificates, provisioning profiles, private keys, or machine-specific signing settings.
 
 ## Data Source
 
