@@ -26,10 +26,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          destination_id="$(xcodebuild -project GermanArticle.xcodeproj -scheme GermanArticle -showdestinations \
-            | grep -oE 'platform:iOS Simulator[^}]*id:[A-F0-9-]{36}' \
-            | sed -n 's/.*id:\([A-F0-9-]*\).*/\1/p' \
-            | head -n 1)"
+          destination_id="$(xcrun simctl list devices available \
+            | awk -F '[()]' '/iPhone/{print $2; exit}')"
           test -n "$destination_id"
           xcodebuild test \
             -project GermanArticle.xcodeproj \
