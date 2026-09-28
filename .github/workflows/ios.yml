@@ -23,11 +23,18 @@ jobs:
       - name: Validate project and shared scheme
         run: xcodebuild -project GermanArticle.xcodeproj -scheme GermanArticle -list
       - name: Run iOS and widget tests
-        run: >-
-          xcodebuild test
-          -project GermanArticle.xcodeproj
-          -scheme GermanArticle
-          -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6'
-          CODE_SIGNING_ALLOWED=NO
-          CODE_SIGNING_REQUIRED=NO
-          COMPILER_INDEX_STORE_ENABLE=NO
+        shell: bash
+        run: |
+          set -euo pipefail
+          destination_id="$(xcodebuild -project GermanArticle.xcodeproj -scheme GermanArticle -showdestinations \
+            | grep -oE 'platform:iOS Simulator[^}]*id:[A-F0-9-]{36}' \
+            | sed -n 's/.*id:\([A-F0-9-]*\).*/\1/p' \
+            | head -n 1)"
+          test -n "$destination_id"
+          xcodebuild test \
+            -project GermanArticle.xcodeproj \
+            -scheme GermanArticle \
+            -destination "id=$destination_id" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO
