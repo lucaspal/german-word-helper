@@ -18,11 +18,12 @@ struct WiktionaryClient: DictionaryClient {
             throw DictionaryError.wordNotFound
         }
 
+        let candidates = Self.lookupCandidates(for: cleaned)
         var lastError: Error = DictionaryError.wordNotFound
-        for candidate in lookupCandidates(for: cleaned) {
+        for candidate in candidates {
             do {
                 let entry = try await fetchCandidate(candidate)
-                if entry.article != nil || candidate == lookupCandidates(for: cleaned).last {
+                if entry.article != nil || candidate == candidates.last {
                     return entry
                 }
             } catch {
