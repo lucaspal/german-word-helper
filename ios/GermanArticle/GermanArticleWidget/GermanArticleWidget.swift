@@ -1,6 +1,7 @@
 import WidgetKit
 import SwiftUI
 
+@main
 struct GermanArticleWidget: Widget {
     let kind: String = "GermanArticleWidget"
 
