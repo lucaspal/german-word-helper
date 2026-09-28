@@ -25,6 +25,7 @@ jobs:
       - name: Validate app extension bundle metadata
         run: |
           /usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' GermanArticleWidget/Info.plist
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleName' GermanArticleWidget/Info.plist
           /usr/libexec/PlistBuddy -c 'Print :CFBundlePackageType' GermanArticleWidget/Info.plist
           ! grep -q 'NSExtensionPrincipalClass\|NSExtensionMainStoryboard' GermanArticleWidget/Info.plist
       - name: Run iOS and widget tests
