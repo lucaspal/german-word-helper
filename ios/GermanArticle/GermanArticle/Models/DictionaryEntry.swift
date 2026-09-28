@@ -1,9 +1,11 @@
 import Foundation
 
-struct DeclensionRow: Codable, Equatable, Hashable {
+struct DeclensionRow: Codable, Equatable, Hashable, Identifiable {
     let caseName: String
     let number: String // "singular" | "plural"
     let form: String
+
+    var id: String { "\(caseName)-\(number)-\(form)" }
 }
 
 struct DictionaryEntry: Codable, Equatable, Hashable {
