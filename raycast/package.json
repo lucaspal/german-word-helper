@@ -1,10 +1,11 @@
 {
   "name": "german-article",
-  "description": "Private Raycast extension for German noun article and declension lookup via Wiktionary",
+  "title": "German Article",
+  "description": "Private Raycast command for German noun article and declension lookup via Wiktionary",
   "author": "Luca",
   "license": "MIT",
   "private": true,
-  "icon": "assets/icon.svg",
+  "icon": "icon.png",
   "commands": [
     {
       "name": "german-article",
