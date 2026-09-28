@@ -129,23 +129,24 @@ struct WiktionaryParser {
 
         for (englishCase, germanCase) in cases {
             guard let headerIndex = lines.firstIndex(where: { line in
-                line.range(of: "^!\\s*" + germanCase, options: [.regularExpression, .caseInsensitive]) != nil
+                let normalized = line.trimmingCharacters(in: .whitespaces)
+                return normalized.hasPrefix("!") && normalized.dropFirst().trimmingCharacters(in: .whitespaces).hasPrefix(germanCase)
             }) else {
                 continue
             }
 
             var forms: [String] = []
             for line in lines.dropFirst(headerIndex + 1) {
-                if line.hasPrefix("!") || line.contains("}") {
+                let normalized = line.trimmingCharacters(in: .whitespaces)
+                if normalized.hasPrefix("!") || normalized.contains("}") {
                     break
                 }
-                guard let range = line.range(of: "^\\|\\|\\s*(.+)$", options: .regularExpression) else {
+                guard normalized.hasPrefix("||") else {
                     continue
                 }
-                let form = String(line[range]).replacingOccurrences(of: "^\\|\\|\\s*", with: "", options: .regularExpression)
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                let form = normalized.dropFirst(2).trimmingCharacters(in: .whitespacesAndNewlines)
                 if !form.isEmpty && form != "-" {
-                    forms.append(form)
+                    forms.append(String(form))
                 }
                 if forms.count == 2 {
                     break
