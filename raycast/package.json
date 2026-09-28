@@ -1,6 +1,5 @@
 {
   "name": "german-article",
-  "version": "0.1.0",
   "description": "Private Raycast extension for German noun article and declension lookup via Wiktionary",
   "author": "Luca",
   "license": "MIT",
