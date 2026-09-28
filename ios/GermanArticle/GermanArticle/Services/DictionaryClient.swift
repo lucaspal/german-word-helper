@@ -13,6 +13,27 @@ struct WiktionaryClient: DictionaryClient {
     }
 
     func fetchWord(_ word: String) async throws -> DictionaryEntry {
+        let cleaned = word.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleaned.isEmpty else {
+            throw DictionaryError.wordNotFound
+        }
+
+        var lastError: Error = DictionaryError.wordNotFound
+        for candidate in lookupCandidates(for: cleaned) {
+            do {
+                let entry = try await fetchCandidate(candidate)
+                if entry.article != nil || candidate == lookupCandidates(for: cleaned).last {
+                    return entry
+                }
+            } catch {
+                lastError = error
+            }
+        }
+
+        throw lastError
+    }
+
+    private func fetchCandidate(_ word: String) async throws -> DictionaryEntry {
         var components = URLComponents(string: baseURL)!
         components.queryItems = [
             URLQueryItem(name: "action", value: "parse"),
@@ -27,6 +48,7 @@ struct WiktionaryClient: DictionaryClient {
 
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("GermanArticle/0.1 (iOS dictionary companion)", forHTTPHeaderField: "User-Agent")
 
         let (data, response) = try await session.data(for: request)
 
@@ -56,8 +78,13 @@ struct WiktionaryClient: DictionaryClient {
             throw DictionaryError.wordNotFound
         }
 
-        let parser = WiktionaryParser()
-        return try parser.parse(word: word, wikitextData: Data(wikitext.utf8))
+        return try WiktionaryParser().parse(word: word, wikitextData: Data(wikitext.utf8))
+    }
+
+    static func lookupCandidates(for word: String) -> [String] {
+        guard let first = word.first, first.isLowercase else { return [word] }
+        let capitalized = String(first).uppercased() + word.dropFirst()
+        return capitalized == word ? [word] : [word, capitalized]
     }
 }
 

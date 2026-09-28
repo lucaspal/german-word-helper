@@ -131,4 +131,9 @@ final class WiktionaryParserTests: XCTestCase {
 
         XCTAssertEqual(entry.translations, [])
     }
+
+    func testLookupCandidatesRetryGermanNounCapitalization() {
+        XCTAssertEqual(WiktionaryClient.lookupCandidates(for: "haus"), ["haus", "Haus"])
+        XCTAssertEqual(WiktionaryClient.lookupCandidates(for: "Haus"), ["Haus"])
+    }
 }
