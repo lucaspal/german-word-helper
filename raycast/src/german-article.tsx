@@ -7,6 +7,7 @@ import { getHistory, addToHistory, MAX_HISTORY } from "./lib/history";
 export default function Command() {
   const [searchText, setSearchText] = useState("");
   const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<string[]>([]);
 
   const { data, error, isLoading } = usePromise(lookupWord, [searchText], {
     execute: searchText.length > 0,
@@ -20,7 +21,6 @@ export default function Command() {
   }, [data]);
 
   // Load history on mount and when showHistory changes
-  const [history, setHistory] = useState<string[]>([]);
   useEffect(() => {
     if (showHistory) {
       setHistory(getHistory());
@@ -117,7 +117,7 @@ export default function Command() {
         <>
           <List.Section title={`RECENT (${history.length}/${MAX_HISTORY})`}>{renderHistory()}</List.Section>
           <ActionPanel>
-            <Action title="Use Clipboard" icon="doc.on.clipboard" shortcut="⌘V" onAction={handleClipboardLookup} />
+            <Action title="Use Clipboard" icon="doc.on.clipboard" shortcut={{ modifiers: ["cmd"], key: "v" }} onAction={handleClipboardLookup} />
           </ActionPanel>
         </>
       ) : isLoading ? (
@@ -130,7 +130,7 @@ export default function Command() {
         <>
           <List.Item title="Enter a German word" subtitle="Try: Bad, Haus, Mädchen, Apfel" icon="magnifyingglass" />
           <ActionPanel>
-            <Action title="Use Clipboard" icon="doc.on.clipboard" shortcut="⌘V" onAction={handleClipboardLookup} />
+            <Action title="Use Clipboard" icon="doc.on.clipboard" shortcut={{ modifiers: ["cmd"], key: "v" }} onAction={handleClipboardLookup} />
           </ActionPanel>
         </>
       )}
