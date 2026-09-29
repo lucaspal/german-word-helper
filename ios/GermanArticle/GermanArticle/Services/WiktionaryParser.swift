@@ -41,22 +41,17 @@ struct WiktionaryParser {
 
     private func extractGender(from wikitext: String) -> (String?, String?) {
         // Pattern 1: Genus = [mfn] in Substantiv Übersicht
-        if let match = wikitext.range(of: #"Genus\s*=\s*([mfn])"#, options: .regularExpression) {
-            let genus = String(wikitext[match]).lowercased()
-            let letter = String(genus.last!)
+        if let letter = extractCapture(from: wikitext, pattern: #"Genus\s*=\s*([mfn])"#) {
             return mapGender(letter)
         }
 
         // Pattern 2: {{Substantiv|Deutsch|[mfn]|...
-        if let match = wikitext.range(of: #"\{\{Substantiv\|Deutsch\|([mfn])\|"#, options: .regularExpression) {
-            let letter = String(wikitext[match].last!)
+        if let letter = extractCapture(from: wikitext, pattern: #"\{\{Substantiv\|Deutsch\|([mfn])\|"#) {
             return mapGender(letter)
         }
 
         // Pattern 3: Wortart|Substantiv|Deutsch followed by Genus
-        if let match = wikitext.range(of: #"Wortart\|Substantiv\|Deutsch[^\n]*?\}\}\s*,\s*\{\{([mfn])\}\}"#, options: .regularExpression) {
-            let genus = String(wikitext[match]).lowercased()
-            let letter = String(genus.last!)
+        if let letter = extractCapture(from: wikitext, pattern: #"Wortart\|Substantiv\|Deutsch[^\n]*?\}\}\s*,\s*\{\{([mfn])\}\}"#) {
             return mapGender(letter)
         }
 
@@ -74,7 +69,7 @@ struct WiktionaryParser {
 
     private func extractTranslations(from wikitext: String) -> [String] {
         var translations: [String] = []
-        let pattern = #"\{\{(?:Ü|Üt)\|en\|([^}|\n]+)(?:\|[^}|\n]*)?"#
+        let pattern = #"\{\{(?:Ü|Üt|Üxx4|L)\|en\|([^}|\n]+)(?:\|[^}|\n]*)?"#
         let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive)
         let range = NSRange(location: 0, length: wikitext.utf16.count)
 
@@ -122,10 +117,22 @@ struct WiktionaryParser {
         return rows
     }
 
+    private func extractCapture(from text: String, pattern: String) -> String? {
+        let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive)
+        let range = NSRange(location: 0, length: text.utf16.count)
+
+        guard let match = regex?.firstMatch(in: text, options: [], range: range),
+              let captureRange = Range(match.range(at: 1), in: text) else {
+            return nil
+        }
+
+        return String(text[captureRange]).lowercased()
+    }
+
     private func extractTableDeclension(from wikitext: String) -> [DeclensionRow] {
         let cases = [("Nominative", "Nominativ"), ("Genitive", "Genitiv"), ("Dative", "Dativ"), ("Accusative", "Akkusativ")]
         let lines = wikitext.components(separatedBy: .newlines)
-        var rows: [DeclensionRow] = []
+        var formsByCase: [String: [String]] = [:]
 
         for (englishCase, germanCase) in cases {
             guard let headerIndex = lines.firstIndex(where: { line in
@@ -138,13 +145,16 @@ struct WiktionaryParser {
             var forms: [String] = []
             for line in lines.dropFirst(headerIndex + 1) {
                 let normalized = line.trimmingCharacters(in: .whitespaces)
-                if normalized.hasPrefix("!") || normalized.contains("}") {
+                if normalized.hasPrefix("!") || normalized.hasPrefix("|-") || normalized == "|}" {
                     break
                 }
-                guard normalized.hasPrefix("||") else {
+                guard normalized.hasPrefix("|") else {
                     continue
                 }
-                let form = normalized.dropFirst(2).trimmingCharacters(in: .whitespacesAndNewlines)
+                let form = normalized
+                    .dropFirst()
+                    .drop(while: { $0 == "|" })
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
                 if !form.isEmpty && form != "-" {
                     forms.append(String(form))
                 }
@@ -154,10 +164,17 @@ struct WiktionaryParser {
             }
 
             guard forms.count == 2 else { continue }
-            rows.append(DeclensionRow(caseName: englishCase, number: "singular", form: forms[0]))
-            rows.append(DeclensionRow(caseName: englishCase, number: "plural", form: forms[1]))
+            formsByCase[englishCase] = forms
         }
 
+        let singularRows = cases.compactMap { englishCase, _ in
+            formsByCase[englishCase].map { DeclensionRow(caseName: englishCase, number: "singular", form: $0[0]) }
+        }
+        let pluralRows = cases.compactMap { englishCase, _ in
+            formsByCase[englishCase].map { DeclensionRow(caseName: englishCase, number: "plural", form: $0[1]) }
+        }
+
+        let rows = singularRows + pluralRows
         return rows
     }
 

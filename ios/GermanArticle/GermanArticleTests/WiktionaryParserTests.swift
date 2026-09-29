@@ -132,6 +132,38 @@ final class WiktionaryParserTests: XCTestCase {
         XCTAssertEqual(entry.translations, [])
     }
 
+    func testParseSupportsAllEnglishTranslationTemplates() throws {
+        let wikitext = """
+{{Substantiv Übersicht|Genus=f}}
+{{Ü|en|woman}}
+{{Üt|en|female}}
+{{Üxx4|en|lady}}
+{{L|en|girl}}
+""".data(using: .utf8)!
+
+        let entry = try WiktionaryParser().parse(word: "Frau", wikitextData: wikitext)
+
+        XCTAssertEqual(entry.translations, ["woman", "female", "lady", "girl"])
+    }
+
+    func testParseReadsGenderFromSubstantivTemplate() throws {
+        let wikitext = "{{Substantiv|Deutsch|f|Frauen}}".data(using: .utf8)!
+
+        let entry = try WiktionaryParser().parse(word: "Frau", wikitextData: wikitext)
+
+        XCTAssertEqual(entry.article, "die")
+        XCTAssertEqual(entry.gender, "Femininum")
+    }
+
+    func testParseReadsGenderFromWortartFallback() throws {
+        let wikitext = "{{Wortart|Substantiv|Deutsch}}, {{m}}".data(using: .utf8)!
+
+        let entry = try WiktionaryParser().parse(word: "Mann", wikitextData: wikitext)
+
+        XCTAssertEqual(entry.article, "der")
+        XCTAssertEqual(entry.gender, "Maskulinum")
+    }
+
     func testLookupCandidatesRetryGermanNounCapitalization() {
         XCTAssertEqual(WiktionaryClient.lookupCandidates(for: "haus"), ["haus", "Haus"])
         XCTAssertEqual(WiktionaryClient.lookupCandidates(for: "Haus"), ["Haus"])

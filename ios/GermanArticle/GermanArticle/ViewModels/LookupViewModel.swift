@@ -16,6 +16,7 @@ final class LookupViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
 
     private let client: DictionaryClient
+    private var latestLookupID = UUID()
 
     init(client: DictionaryClient) {
         self.client = client
@@ -25,12 +26,16 @@ final class LookupViewModel: ObservableObject {
         let cleaned = word.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleaned.isEmpty else { return }
 
+        let lookupID = UUID()
+        latestLookupID = lookupID
+
         state = .loading
         entry = nil
         errorMessage = nil
 
         do {
             let entry = try await client.fetchWord(cleaned)
+            guard lookupID == latestLookupID else { return }
             self.entry = entry
             state = .success
             if let data = try? JSONEncoder().encode(entry) {
@@ -39,12 +44,14 @@ final class LookupViewModel: ObservableObject {
                 WidgetCenter.shared.reloadAllTimelines()
             }
         } catch {
+            guard lookupID == latestLookupID else { return }
             self.errorMessage = error.localizedDescription
             state = .error
         }
     }
 
     func clear() {
+        latestLookupID = UUID()
         state = .idle
         entry = nil
         errorMessage = nil

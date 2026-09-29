@@ -70,6 +70,23 @@ final class LookupViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.entry)
         XCTAssertNil(viewModel.errorMessage)
     }
+
+    func testLatestLookupWinsWhenAnEarlierRequestFinishesLast() async {
+        let delayedClient = DelayedMockDictionaryClient()
+        delayedClient.results = [
+            "Bad": (DictionaryEntry.mockBad, 200_000_000),
+            "Haus": (DictionaryEntry.mockHaus, 10_000_000)
+        ]
+        viewModel = LookupViewModel(client: delayedClient)
+
+        async let firstLookup: Void = viewModel.lookup("Bad")
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        await viewModel.lookup("Haus")
+        await firstLookup
+
+        XCTAssertEqual(viewModel.state, .success)
+        XCTAssertEqual(viewModel.entry?.word, "Haus")
+    }
 }
 
 private class MockDictionaryClient: DictionaryClient {
@@ -82,5 +99,18 @@ private class MockDictionaryClient: DictionaryClient {
         case .failure(let error):
             throw error
         }
+    }
+}
+
+private final class DelayedMockDictionaryClient: DictionaryClient {
+    var results: [String: (DictionaryEntry, UInt64)] = [:]
+
+    func fetchWord(_ word: String) async throws -> DictionaryEntry {
+        guard let (entry, delay) = results[word] else {
+            throw DictionaryError.wordNotFound
+        }
+
+        try await Task.sleep(nanoseconds: delay)
+        return entry
     }
 }
