@@ -2,6 +2,12 @@
 
 A small, installable iPhone utility for looking up German nouns. Enter a word such as `Bad` and see its article (`der`, `die`, or `das`), grammatical gender, English meanings, and declension forms.
 
+## Native iOS companion
+
+The repository also includes a native SwiftUI iOS app and WidgetKit companion.
+Open [`ios/README.md`](ios/README.md) for its Xcode setup, simulator workflow,
+and testing instructions.
+
 ## Dictionary source
 
 The application uses the public German Wiktionary MediaWiki API:

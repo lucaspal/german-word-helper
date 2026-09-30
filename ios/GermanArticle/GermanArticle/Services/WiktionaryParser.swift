@@ -1,0 +1,193 @@
+import Foundation
+
+enum WiktionaryParserError: Error, LocalizedError {
+    case emptyWikitext
+    case parseFailed(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .emptyWikitext:
+            return "Wikitext is empty"
+        case .parseFailed(let message):
+            return "Failed to parse wikitext: \(message)"
+        }
+    }
+}
+
+struct WiktionaryParser {
+    func parse(word: String, wikitextData: Data) throws -> DictionaryEntry {
+        guard let wikitext = String(data: wikitextData, encoding: .utf8) else {
+            throw WiktionaryParserError.parseFailed("Invalid UTF-8 encoding")
+        }
+
+        guard !wikitext.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw WiktionaryParserError.emptyWikitext
+        }
+
+        let (article, gender) = extractGender(from: wikitext)
+        let translations = extractTranslations(from: wikitext)
+        let declension = extractDeclension(from: wikitext, fallbackWord: word)
+        let url = "https://de.wiktionary.org/wiki/\(word.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? word)"
+
+        return DictionaryEntry(
+            word: word,
+            article: article,
+            gender: gender,
+            translations: translations,
+            declension: declension,
+            wiktionaryUrl: url
+        )
+    }
+
+    private func extractGender(from wikitext: String) -> (String?, String?) {
+        // Pattern 1: Genus = [mfn] in Substantiv Übersicht
+        if let letter = extractCapture(from: wikitext, pattern: #"Genus\s*=\s*([mfn])"#) {
+            return mapGender(letter)
+        }
+
+        // Pattern 2: {{Substantiv|Deutsch|[mfn]|...
+        if let letter = extractCapture(from: wikitext, pattern: #"\{\{Substantiv\|Deutsch\|([mfn])\|"#) {
+            return mapGender(letter)
+        }
+
+        // Pattern 3: Wortart|Substantiv|Deutsch followed by Genus
+        if let letter = extractCapture(from: wikitext, pattern: #"Wortart\|Substantiv\|Deutsch[^\n]*?\}\}\s*,\s*\{\{([mfn])\}\}"#) {
+            return mapGender(letter)
+        }
+
+        return (nil, nil)
+    }
+
+    private func mapGender(_ letter: String) -> (String?, String?) {
+        switch letter {
+        case "m": return ("der", "Maskulinum")
+        case "f": return ("die", "Femininum")
+        case "n": return ("das", "Neutrum")
+        default: return (nil, nil)
+        }
+    }
+
+    private func extractTranslations(from wikitext: String) -> [String] {
+        var translations: [String] = []
+        let pattern = #"\{\{(?:Ü|Üt|Üxx4|L)\|en\|([^}|\n]+)(?:\|[^}|\n]*)?"#
+        let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive)
+        let range = NSRange(location: 0, length: wikitext.utf16.count)
+
+        regex?.enumerateMatches(in: wikitext, options: [], range: range) { match, _, _ in
+            guard let match = match,
+                  let range = Range(match.range(at: 1), in: wikitext) else { return }
+            let value = String(wikitext[range]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !value.isEmpty && !translations.contains(value) && translations.count < 10 {
+                translations.append(value)
+            }
+        }
+
+        return translations
+    }
+
+    private func extractDeclension(from wikitext: String, fallbackWord: String) -> [DeclensionRow] {
+        let labels = [
+            ("Nominative", "singular", "Nominativ Singular"),
+            ("Genitive", "singular", "Genitiv Singular"),
+            ("Dative", "singular", "Dativ Singular"),
+            ("Accusative", "singular", "Akkusativ Singular"),
+            ("Nominative", "plural", "Nominativ Plural"),
+            ("Genitive", "plural", "Genitiv Plural"),
+            ("Dative", "plural", "Dativ Plural"),
+            ("Accusative", "plural", "Akkusativ Plural")
+        ]
+
+        var rows: [DeclensionRow] = []
+
+        for (caseName, number, germanLabel) in labels {
+            if let form = extractField(from: wikitext, name: germanLabel), !form.isEmpty {
+                rows.append(DeclensionRow(caseName: caseName, number: number, form: form))
+            }
+        }
+
+        if rows.isEmpty {
+            rows = extractTableDeclension(from: wikitext)
+        }
+
+        // Fallback if no declension found
+        if rows.isEmpty {
+            rows.append(DeclensionRow(caseName: "Nominative", number: "singular", form: fallbackWord))
+        }
+
+        return rows
+    }
+
+    private func extractCapture(from text: String, pattern: String) -> String? {
+        let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive)
+        let range = NSRange(location: 0, length: text.utf16.count)
+
+        guard let match = regex?.firstMatch(in: text, options: [], range: range),
+              let captureRange = Range(match.range(at: 1), in: text) else {
+            return nil
+        }
+
+        return String(text[captureRange]).lowercased()
+    }
+
+    private func extractTableDeclension(from wikitext: String) -> [DeclensionRow] {
+        let cases = [("Nominative", "Nominativ"), ("Genitive", "Genitiv"), ("Dative", "Dativ"), ("Accusative", "Akkusativ")]
+        let lines = wikitext.components(separatedBy: .newlines)
+        var formsByCase: [String: [String]] = [:]
+
+        for (englishCase, germanCase) in cases {
+            guard let headerIndex = lines.firstIndex(where: { line in
+                let normalized = line.trimmingCharacters(in: .whitespaces)
+                return normalized.hasPrefix("!") && normalized.dropFirst().trimmingCharacters(in: .whitespaces).hasPrefix(germanCase)
+            }) else {
+                continue
+            }
+
+            var forms: [String] = []
+            for line in lines.dropFirst(headerIndex + 1) {
+                let normalized = line.trimmingCharacters(in: .whitespaces)
+                if normalized.hasPrefix("!") || normalized.hasPrefix("|-") || normalized == "|}" {
+                    break
+                }
+                guard normalized.hasPrefix("|") else {
+                    continue
+                }
+                let form = normalized
+                    .dropFirst()
+                    .drop(while: { $0 == "|" })
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                if !form.isEmpty && form != "-" {
+                    forms.append(String(form))
+                }
+                if forms.count == 2 {
+                    break
+                }
+            }
+
+            guard forms.count == 2 else { continue }
+            formsByCase[englishCase] = forms
+        }
+
+        let singularRows = cases.compactMap { englishCase, _ in
+            formsByCase[englishCase].map { DeclensionRow(caseName: englishCase, number: "singular", form: $0[0]) }
+        }
+        let pluralRows = cases.compactMap { englishCase, _ in
+            formsByCase[englishCase].map { DeclensionRow(caseName: englishCase, number: "plural", form: $0[1]) }
+        }
+
+        let rows = singularRows + pluralRows
+        return rows
+    }
+
+    private func extractField(from wikitext: String, name: String) -> String? {
+        let escapedName = NSRegularExpression.escapedPattern(for: name)
+        let pattern = "^\\|" + escapedName + "=([^\n]*)"
+        let regex = try? NSRegularExpression(pattern: pattern, options: [.anchorsMatchLines, .caseInsensitive])
+        let range = NSRange(location: 0, length: wikitext.utf16.count)
+
+        if let match = regex?.firstMatch(in: wikitext, options: [], range: range),
+           let range = Range(match.range(at: 1), in: wikitext) {
+            return String(wikitext[range]).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return nil
+    }
+}
